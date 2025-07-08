@@ -1,8 +1,5 @@
-`````````instructions
-````````instructions
-``instructions
-
-# Copilot Instructions: Générer une Simple Admin Page
+```instructions
+``` Copilot Instructions: Générer une Simple Admin Page
 
 > **Avant de générer une page ou un composant pour une nouvelle fonctionnalité admin, vérifie dans `components/ui/` si un design ou composant correspondant existe déjà pour illustrer ou structurer la fonctionnalité.  
 > Si un composant adapté existe, utilise-le ou référence-le dans la page ou le formulaire généré.  
@@ -29,7 +26,7 @@ Pour toute nouvelle entité admin, effectue les étapes suivantes :
 
 ```ts
 import { z } from 'zod';
-import { createField } from '@/lib/admin-generator';
+import { createField } from '@/shared/lib/admin/admin-generator';
 
 export const [Entity]Schema = z.object({
   // ...fields...
@@ -44,10 +41,12 @@ export type [Entity] = z.infer<typeof [Entity]Schema>;
 
 ```ts
 import { [Entity] } from './[entity].schema';
-import { createMockService } from '@/lib/admin-generator';
+import { createMockService } from '@/shared/lib/admin/admin-generator';
 
 export const mock[Entity]s: [Entity][] = [ /* ... */ ];
-export const [entity]Service = createMockService(mock[Entity
+export const [entity]Service = createMockService(mock[Entity]s, {
+  entityName: '[entity]s'
+});
 
 3. **Service API réel**
    - Crée le fichier `features/[entity]/[entity].service.ts` :
@@ -56,11 +55,18 @@ export const [entity]Service = createMockService(mock[Entity
 import BaseService from '@/shared/lib/services/base-service';
 import { API_ENDPOINTS } from '@/shared/config/api';
 
-export const [entity]Service = new BaseService<[Entity]>(
-  http.private,
-  API_ENDPOINTS.[entity]
-);
+export const [entity]Service = new BaseService<[Entity]>(API_ENDPOINTS.[entity]);
 ```
+
+3.1 **Service API réel pour l’appel administration**
+   - Si tu utilises une vraie API, crée le fichier `features/[entity]/hooks/use-[entity].ts` :
+
+```ts
+import { createApiService } from '@/shared/lib/admin/admin-generator';
+import type { [Entity] } from './[entity].schema';
+import { API_ENDPOINTS } from '@/shared/config/api';
+export const [entity]Service = createApiService<[Entity]>(API_ENDPOINTS.[entity].base);
+``` 
 
 4. **Hook de query**
    - Crée le fichier `features/[entity]/hooks/use-[entity].ts` :
@@ -84,20 +90,15 @@ export function use[Entity]() {
 **a) Avec mock :**
 
 ```ts
-import { createAdminEntity } from '@/lib/admin-generator';
+import { createAdminEntity } from '@/shared/lib/admin/admin-generator';
 import { [Entity]Schema } from './[entity].schema';
 import { [entity]Service } from './[entity].mock';
 
 export const [Entity]AdminConfig = createAdminEntity('[Nom]', [Entity]Schema, {
   description: 'Gérez vos ...',
   icon: '🏷️',
-  actions: { create: true, read: true, update: true, delete: true, bulk: false, export: false },
-  services: {
-    fetchItems: [entity]Service.fetchItems,
-    createItem: [entity]Service.createItem,
-    updateItem: [entity]Service.updateItem,
-    deleteItem: [entity]Service.deleteItem,
-  },
+  actions: { create: true, read: true, update: true, delete: true, bulk: false, },
+  services: [entity]Service,
   queryKey: ['[entity]s'],
 });
 ```
@@ -105,20 +106,15 @@ export const [Entity]AdminConfig = createAdminEntity('[Nom]', [Entity]Schema, {
 **b) Avec API réelle :**
 
 ```ts
-import { createAdminEntity } from '@/lib/admin-generator';
+import { createAdminEntity } from '@/shared/lib/admin/admin-generator';
 import { [Entity]Schema } from './[entity].schema';
 import { [entity]Service } from './[entity].service';
 
 export const [Entity]AdminConfig = createAdminEntity('[Nom]', [Entity]Schema, {
   description: 'Gérez vos ...',
   icon: '🏷️',
-  actions: { create: true, read: true, update: true, delete: true, bulk: false, export: false },
-  services: {
-    fetchItems: [entity]Service.list,
-    createItem: [entity]Service.create,
-    updateItem: [entity]Service.update,
-    deleteItem: [entity]Service.delete,
-  },
+  actions: { create: true, read: true, update: true, delete: true, bulk: false, },
+  services: [entity]Service,
   queryKey: ['[entity]s'],
 });
 ```
@@ -144,6 +140,102 @@ export default function [Entity]AdminPage() {
 
 7. **Vérifie que le composant `SimpleAdminPage` est bien utilisé**  
    - Import depuis `@/shared/components/atoms/ui/simple-admin-page`.
+   - `SimpleAdminPage` utilise automatiquement `SmartDynamicForm` qui détecte le mode steps et bascule vers `DynamicFormSteps` si nécessaire.
+
+**Si le schéma comporte plus de 7 champs, limite le nombre de colonnes affichées dans le tableau admin à 5 à 7 maximum, en sélectionnant automatiquement les champs les plus pertinents pour l'usage métier (ex : nom, statut, type, date, ville, etc.). Les champs secondaires ou peu lisibles (description longue, image, etc.) ne doivent pas apparaître par défaut dans le tableau, mais restent accessibles dans le détail ou le formulaire.**
+
+**Si le schéma comporte plus de 8 champs de formulaire, utilise automatiquement le mode `steps` (étapes) pour le formulaire admin. Divise les champs en 2-3 étapes logiques avec des titres explicites (ex : "Informations générales", "Détails complémentaires", "Finalisation"). Cette approche améliore l'UX pour les entités complexes comme Restaurant, Commande, etc.**
+
+## 🎯 Mode Steps (Étapes) pour Formulaires Complexes
+
+**Pour les formulaires avec plus de 8 champs, utilise le mode `steps` avec configuration avancée :**
+
+### Configuration des Steps
+
+```ts
+ui: {
+  form: {
+    layout: 'steps',
+    steps: [
+      {
+        title: 'Informations générales',
+        description: 'Nom, description, type, coordonnées',
+        layout: 'two-cols', // Layout spécifique à cette étape
+        fields: ['name', 'description', 'cuisine', 'address', 'city', 'phone']
+      },
+      {
+        title: 'Détails pratiques', 
+        description: 'Horaires, spécialités, image',
+        layout: 'simple', // Layout différent pour cette étape
+        fields: ['openingHours', 'specialties', 'image']
+      },
+      {
+        title: 'Finalisation',
+        description: 'Options de livraison et validation',
+        layout: 'horizontal', // Encore un autre layout
+        fields: ['deliveryAvailable', 'deliveryRadius', 'isActive']
+      }
+    ]
+  }
+}
+```
+
+### Layouts Disponibles par Étape
+
+- `'simple'` : Un champ par ligne, layout vertical classique
+- `'two-cols'` : Deux colonnes côte à côte pour optimiser l'espace
+- `'horizontal'` : Disposition horizontale pour les champs courts
+- `'sections'` : Groupement par sections avec séparateurs
+
+### Règles pour les Steps
+
+1. **Divise logiquement** : Groupe les champs par thématique (infos générales, détails, options, finalisation)
+2. **Titre explicite** : Chaque step doit avoir un titre clair et une description optionnelle
+3. **Layout adapté** : Choisis le layout selon le type de champs dans l'étape :
+   - `two-cols` pour les champs courts (nom, email, téléphone)
+   - `simple` pour les champs longs (description, texte riche)
+   - `horizontal` pour les toggles/checkboxes
+4. **Navigation fluide** : L'utilisateur peut naviguer entre les étapes, validation progressive
+5. **Feedback visuel** : Indicateur de progression, étape courante mise en évidence
+
+### Exemple Complet
+
+```ts
+export const RestaurantAdminConfig = createAdminEntity('Restaurant', RestaurantSchema, {
+  description: 'Gérez vos restaurants avec formulaire en étapes',
+  icon: '🍽️',
+  actions: { create: true, read: true, update: true, delete: true, bulk: true },
+  services: restaurantService,
+  queryKey: ['restaurants'],
+  ui: {
+    form: {
+      layout: 'steps',
+      steps: [
+        {
+          title: 'Informations générales',
+          description: 'Nom, description, type, coordonnées',
+          layout: 'two-cols',
+          fields: ['name', 'description', 'cuisine', 'address', 'city', 'phone', 'email']
+        },
+        {
+          title: 'Détails pratiques',
+          description: 'Horaires, spécialités, image',
+          layout: 'simple',
+          fields: ['openingHours', 'specialties', 'image']
+        },
+        {
+          title: 'Livraison',
+          description: 'Options de livraison',
+          layout: 'horizontal',
+          fields: ['deliveryAvailable', 'deliveryRadius', 'averageDeliveryTime']
+        }
+      ]
+    }
+  }
+});
+```
+
+**Le système détecte automatiquement le mode steps et utilise le composant `DynamicFormSteps` via `SmartDynamicForm` pour un rendu optimisé avec navigation, validation progressive et layouts adaptatifs.**
 
 **À chaque fois qu’une nouvelle fonctionnalité admin est générée, ajoute automatiquement une entrée correspondante dans le menu sidebar admin.**
 - La liste des menus sidebar se trouve dans `shared/lib/constants/app.constant.ts`.
@@ -438,7 +530,20 @@ const currentDate = new Date();
 const activeUsers = users.filter(user => user.isActive);
 ```
 
-### 4. Gestion des Erreurs
+### 4. Formulaires Admin en Mode Steps
+- **Layout adapté** : Choisis le bon layout pour chaque étape selon le contenu
+  - `'two-cols'` : Pour les champs courts (nom, email, téléphone, prix, etc.)
+  - `'simple'` : Pour les champs longs (description, texte riche, adresse complète)
+  - `'horizontal'` : Pour les toggles, checkboxes et champs courts en ligne
+  - `'sections'` : Pour grouper logiquement des champs dans une même étape
+- **Étapes logiques** : Groupe les champs par thématique métier
+  - Étape 1 : Informations essentielles/générales
+  - Étape 2 : Détails complémentaires/spécifiques
+  - Étape 3 : Configuration/options/finalisation
+- **Navigation intuitive** : Utilise des titres et descriptions clairs pour chaque étape
+- **Validation progressive** : Chaque étape peut être validée indépendamment
+
+### 5. Gestion des Erreurs
 ```ts
 // Dans les hooks
 const { mutate: createCategory, isPending, error } = useMutation({
@@ -517,42 +622,44 @@ Quand tu développes une nouvelle fonctionnalité :
 
 Si tu utilises une vraie API (et non un mock) pour l’admin :
 
-1. **Service API réel**
+1. **Service API réel pour l'appel client**
    - Crée le fichier `features/[entity]/[entity].service.ts` :
 
 ```ts
 import BaseService from '@/shared/lib/services/base-service';
 import { API_ENDPOINTS } from '@/lib/api-endpoints';
 
-export const [entity]Service = new BaseService<[Entity]>(
-  http.private,
-  API_ENDPOINTS.[entity]
-);
+export const [entity]Service = new BaseService<[Entity]>(API_ENDPOINTS.[entity]);
 ```
+2. **Service API réel pour l'appel administration**
+   - Crée le fichier `features/[entity]/hooks/use-[entity].ts` :
 
-2. **Configuration admin**
+```ts
+import { createApiService } from '@/shared/lib/admin/admin-generator';
+import type { [Entity] } from './[entity].schema';
+import { API_ENDPOINTS } from '@/shared/lib/config/api';
+
+export const [entity]Service = createApiService<[Entity]>(API_ENDPOINTS.[entity].base);
+
+pour chaque service créer met a jour API_ENDPOINTS
+3. **Configuration admin**
    - Dans `features/[entity]/[entity].admin-config.ts`, importe le vrai service :
 
 ```ts
-import { createAdminEntity } from '@/lib/admin-generator';
+import { createAdminEntity } from '@/shared/lib/admin/admin-generator';
 import { [Entity]Schema } from './[entity].schema';
 import { [entity]Service } from './[entity].service';
 
 export const [Entity]AdminConfig = createAdminEntity('[Nom]', [Entity]Schema, {
   description: 'Gérez vos ...',
   icon: '🏷️',
-  actions: { create: true, read: true, update: true, delete: true, bulk: false, export: false },
-  services: {
-    fetchItems: [entity]Service.list,
-    createItem: [entity]Service.create,
-    updateItem: [entity]Service.update,
-    deleteItem: [entity]Service.delete,
-  },
+  actions: { create: true, read: true, update: true, delete: true, bulk: false, },
+  services: [entity]Service,
   queryKey: ['[entity]s'],
 });
 ```
 
-3. **Page d’admin**
+4. **Page d’admin**
    - Rien ne change, tu utilises toujours le composant `SimpleAdminPage` avec la config ci-dessus.
 
 > Remplace `[entity]`, `[Entity]`, `[Nom]` par le nom de ton entité (ex : `category`, `Category`, `Catégorie`).
@@ -705,8 +812,11 @@ Pour personnaliser l’affichage d’un champ (ex : prix, devise, format custom
   2. Crée le service :
      ```ts
      import BaseService from '@/shared/lib/services/base-service';
-     import { API_ENDPOINTS } from '@/shared/config/api';
-     export const bookingDistributionService = new BaseService(API_ENDPOINTS.dashboard.bookingDistribution);
+     import { API_ENDPOINTS } from '@/lib/api-endpoints';
+
+     export const bookingDistributionService = new BaseService(
+       API_ENDPOINTS.dashboard.bookingDistribution
+     );
      ```
   3. Utilise le hook générique :
      ```ts
@@ -730,3 +840,227 @@ Pour personnaliser l’affichage d’un champ (ex : prix, devise, format custom
 - **Toujours utiliser un composant `Skeleton` (ou équivalent) pour l’affichage du chargement dans les pages et composants admin/factorisés.**
   - Le Skeleton doit être visible tant que les données sont en cours de chargement (`isLoading`, `isFetching`, etc.).
   - Ne jamais afficher un écran vide ou un simple "Loading..." : le Skeleton doit donner un feedback visuel cohérent avec l’UI admin.
+
+## 🛡️ Conseils avancés et exigences qualité
+
+### 1. Sécurité & Permissions
+- Toute action sensible (suppression, modification critique) doit être confirmée par un dialogue de confirmation.
+- Les permissions d’accès aux pages et actions admin doivent être vérifiées côté client ET côté serveur.
+  - Utilise les hooks d’authentification existants (`useAuth`, etc.) pour restreindre l’accès aux pages admin.
+  - Si une permission est manquante, affiche un message d’erreur ou redirige vers la page de login.
+
+### 2. Modularité & Factorisation
+- Factorise tout code dupliqué entre entités admin dans un utilitaire ou composant partagé.
+- Les hooks, services et configs doivent être génériques et réutilisables dès que possible.
+- Pour toute logique métier récurrente (pagination, tri, recherche), utilise ou crée un hook factorisé (ex : `useAdminTable`, `useEntityQuery`).
+
+
+### 3. Typage & Généricité
+- Les types TypeScript doivent être stricts et explicites.
+- Évite les types `any` ou les assertions de type non justifiées.
+- Pour chaque entité, exporte le type principal (`export type [Entity] = ...`) et utilise-le partout (service, hook, composant).
+
+### 4. Organisation des fichiers
+- Chaque entité admin doit avoir son propre dossier dans `features/`, même pour une seule page.
+- Les hooks sont toujours dans `features/[entity]/hooks/`.
+- Les services sont dans `features/[entity]/[entity].mock.ts` et `features/[entity]/[entity].service.ts`.
+- Les schémas et types sont dans `features/[entity]/[entity].schema.ts`.
+
+### 5. Expérience développeur
+- Précise dans la doc comment basculer du mock à l’API réelle (changer l’import dans la config admin).
+
+### 6. Nettoyage & Refactoring
+- Supprime tout code mort ou non utilisé après refactoring.
+- Vérifie que les imports sont triés et ne contiennent pas de doublons.
+- Lance un lint et un format automatique avant chaque commit.
+
+### ✅ Checklist finale pour toute nouvelle entité admin
+
+- [ ] Schéma Zod et type TypeScript créés
+- [ ] Service mock avec persistance localStorage
+- [ ] Service API réel (même si non utilisé tout de suite)
+- [ ] Hook de query (et d’actions si besoin)
+- [ ] Config admin (mock par défaut)
+- [ ] Page d’admin générée avec `SimpleAdminPage`
+- [ ] Entrée ajoutée dans la sidebar admin
+- [ ] Tests unitaires pour le schéma et le service mock
+- [ ] Lint, format et vérification des erreurs TypeScript
+- [ ] Documentation d’utilisation et d’intégration
+
+---
+
+## 🚀 Système de Mock Avancé
+
+### Utilisation du Service Mock Étendu
+
+**Pour toute nouvelle entité admin, utilise le service mock avancé avec les options suivantes :**
+
+#### 1. Service Mock Simple (par défaut)
+```ts
+import { createMockService } from '@/shared/lib/admin/admin-generator';
+import { [Entity] } from './[entity].schema';
+
+export const mock[Entity]s: [Entity][] = [ /* ... */ ];
+export const [entity]Service = createMockService(mock[Entity]s, {
+  entityName: '[entity]s'
+});
+```
+
+#### 2. Service Mock avec Génération Automatique
+```ts
+import { createEnhancedMockService, createMockDataGenerator, mockDataGenerators } from '@/shared/lib/admin/admin-generator';
+
+export const [entity]Service = createEnhancedMockService(
+  '[entity]s',
+  createMockDataGenerator({
+    name: mockDataGenerators.name,
+    email: mockDataGenerators.email,
+    status: mockDataGenerators.status,
+    // ... autres champs
+  }),
+  50 // nombre d'éléments à générer
+);
+```
+
+#### 3. Service Mock avec Hooks et Validation
+```ts
+export const [entity]Service = createMockService(mock[Entity]s, {
+  entityName: '[entity]s',
+  enableValidation: true,
+  validator: (item) => {
+    if (!item.name) return 'Le nom est requis';
+    return true;
+  },
+  hooks: {
+    beforeCreate: async (item) => ({
+      ...item,
+      slug: item.name.toLowerCase().replace(/\s+/g, '-'),
+      createdBy: 'system'
+    }),
+    afterCreate: async (item) => {
+      console.log(`${item.name} créé avec succès`);
+    },
+    beforeDelete: async (id, item) => {
+      // Empêcher la suppression si conditions non remplies
+      return item.status !== 'protected';
+    }
+  },
+  enableBackup: true,
+  maxBackups: 10
+});
+```
+
+### Fonctionnalités Disponibles
+
+#### ExtendedCrudService inclut :
+- **`fetchItems(filters)`** : Recherche, tri, pagination, filtres
+- **`bulkCreate(items)`** : Création en lot
+- **`bulkUpdate(updates)`** : Modification en lot  
+- **`bulkDelete(ids)`** : Suppression en lot
+- **`getById(id)`** : Récupération par ID
+- **`backup()`** : Sauvegarde JSON
+- **`restore(backupData)`** : Restauration depuis backup
+- **`getStats()`** : Statistiques (total, créations/modifs du jour, etc.)
+
+#### Filtres et Recherche
+```ts
+// Dans le hook, utilise les filtres avancés
+const { data, meta } = await service.fetchItems({
+  search: 'terme de recherche',
+  status: 'active',
+  sort: 'createdAt',
+  order: 'desc',
+  page: 1,
+  limit: 20
+});
+```
+
+#### Générateurs de Données Factices Disponibles
+- `mockDataGenerators.id()` : ID unique
+- `mockDataGenerators.name()` : Noms de personnes
+- `mockDataGenerators.email()` : Adresses email
+- `mockDataGenerators.phone()` : Numéros de téléphone
+- `mockDataGenerators.address()` : Adresses
+- `mockDataGenerators.city()` : Villes françaises
+- `mockDataGenerators.price(min, max)` : Prix
+- `mockDataGenerators.description()` : Descriptions lorem
+- `mockDataGenerators.status()` : Statuts
+- `mockDataGenerators.date(daysBack)` : Dates
+- `mockDataGenerators.boolean()` : Booléens
+- `mockDataGenerators.category()` : Catégories
+- `mockDataGenerators.image()` : URLs d'images
+- `mockDataGenerators.url()` : URLs de sites
+
+### Hooks Lifecycle Disponibles
+- **`beforeCreate`** : Transformer les données avant création
+- **`afterCreate`** : Actions après création (logs, notifications, etc.)
+- **`beforeUpdate`** : Transformer les données avant modification
+- **`afterUpdate`** : Actions après modification
+- **`beforeDelete`** : Validation avant suppression (return false pour annuler)
+- **`afterDelete`** : Actions après suppression
+
+### Persistence et Backup
+- **Persistence automatique** : localStorage avec clé unique par entité
+- **Backup automatique** : sauvegarde à chaque modification
+- **Restauration** : fonction `restore()` pour charger un backup
+- **Limite de backups** : configurable (défaut: 5)
+
+### Instructions Importantes
+- **Toujours utiliser** `createEnhancedMockService` pour les nouvelles entités avec génération automatique
+- **Définir des hooks** pour la logique métier (slugs, timestamps, validations)
+- **Utiliser les générateurs** plutôt que des données statiques
+- **Tester les fonctionnalités bulk** pour les opérations en lot
+- **Profiter des statistiques** pour les dashboards admin
+
+### Exemple Complet
+```ts
+// features/product/product.mock.ts
+import { createEnhancedMockService, createMockDataGenerator, mockDataGenerators } from '@/shared/lib/admin/admin-generator';
+import type { Product } from './product.schema';
+
+export const productService = createEnhancedMockService<Product>(
+  'products',
+  createMockDataGenerator({
+    name: () => `Produit ${mockDataGenerators.name()}`,
+    price: () => mockDataGenerators.price(10, 500),
+    description: mockDataGenerators.description,
+    category: mockDataGenerators.category,
+    status: mockDataGenerators.status,
+    image: mockDataGenerators.image,
+  }),
+  100, // génère 100 produits
+  {
+    enableValidation: true,
+    validator: (product) => product.price > 0 ? true : 'Le prix doit être positif',
+    hooks: {
+      beforeCreate: async (product) => ({
+        ...product,
+        slug: product.name.toLowerCase().replace(/\s+/g, '-'),
+        sku: `SKU-${Date.now()}`
+      })
+    }
+  }
+);
+```
+
+**Ce système de mock permet un développement complet en mode offline avec toutes les fonctionnalités d'une vraie API.**
+
+---
+
+## 📋 Enregistrement des entités admin pour la sidebar
+
+**Après avoir créé la config admin d’une entité, il faut l’enregistrer dans le registre global pour qu’elle apparaisse automatiquement dans la sidebar admin.**
+
+- Ajoute l’import de la config dans `features/admin-entities.ts` :
+  ```ts
+  import { RestaurantAdminConfig } from './restaurant/restaurant.admin-config';
+  import { registerAdminEntity } from '@/shared/lib/admin/admin-generator';
+  
+  registerAdminEntity('restaurant', RestaurantAdminConfig, '/admin/restaurant', '🍽️');
+  ```
+- Pour chaque entité, adapte le nom, le chemin et l’icône.
+- Ce fichier centralise l’enregistrement de toutes les entités admin (une ligne par entité).
+- Le menu sidebar est généré dynamiquement à partir de ce registre (voir `getSidebarNavItems` dans `shared/lib/constants/app.constant.ts`).
+- **Ne pas oublier cette étape sinon la page n’apparaîtra pas dans la navigation admin.**
+
+---
