@@ -27,9 +27,17 @@ export default function HomePage() {
         <h2 className="text-3xl font-bold mb-6 text-center text-accent">Notre Menu</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {menu?.data?.slice(0, 6).map((item) => (
-            <Card key={item.id} className="flex flex-col items-center p-4">
+            <Card
+              key={item.id}
+              className="flex flex-col items-center p-4 cursor-pointer hover:shadow-lg transition"
+              onClick={() => router.push(`/menu/${item.id}`)}
+              tabIndex={0}
+              role="button"
+              aria-label={`Voir le détail du plat ${item.name}`}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') router.push(`/menu/${item.id}`); }}
+            >
               {item.image && <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-full mb-2" />}
-              <div className="font-semibold text-lg mb-1">{item.name}</div>
+              <div className="font-semibold text-lg mb-1 text-primary underline underline-offset-2">{item.name}</div>
               <div className="text-gray-500 text-sm mb-2">{item.description}</div>
               <div className="font-bold text-primary">{item.price} €</div>
             </Card>
