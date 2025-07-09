@@ -53,7 +53,16 @@ export default function ReservationPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(form);
+    localStorage.setItem('reservation-recap', JSON.stringify(form));
+    mutation.mutate(form, {
+      onSuccess: () => {
+        setSuccess(true);
+        setError(null);
+        setTimeout(() => {
+          window.location.href = '/reservation/confirmation';
+        }, 1200);
+      },
+    });
   };
 
   return (
