@@ -11,7 +11,7 @@ export const MenuSchema = z.object({
     label: 'Description',
     placeholder: 'Description du plat...'
   }),
-  price: createField.number({
+  price: createField.number(0, {
     label: 'Prix',
     display: { prefix: '€ ' }
   }),
@@ -31,7 +31,7 @@ export const MenuSchema = z.object({
     placeholder: 'Ex: Gluten, Lactose, Œufs',
     display: { showInTable: false }
   }).optional(),
-  preparationTime: createField.number({
+  preparationTime: createField.number(1, {
     label: 'Temps de préparation (min)',
     display: { suffix: ' min' }
   }),

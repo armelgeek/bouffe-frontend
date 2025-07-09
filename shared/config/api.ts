@@ -5,4 +5,8 @@ export const API_ENDPOINTS = {
   },
   order: '/orders',
   menu: '/menus',
+  table: '/tables',
+  settings: '/settings',
+  reservation: '/reservations',
+  dashboard: '/dashboard',
 };

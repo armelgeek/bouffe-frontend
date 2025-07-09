@@ -233,7 +233,7 @@ export const createField = {
   richText: (metadata?: ZodMetadata) =>
     withMeta(z.string(), { type: 'rich-text', ...metadata }),
 
-  number: (metadata?: ZodMetadata) =>
+  number: (p0: number, metadata?: ZodMetadata) =>
     withMeta(z.number(), { type: 'number', ...metadata }),
 
   boolean: (metadata?: ZodMetadata) =>
