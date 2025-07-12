@@ -44,6 +44,10 @@ export const MenuSchema = z.object({
   updatedAt: createField.date({
     display: { showInTable: false, showInForm: false }
   }).optional(),
+  specialOffer: createField.boolean({
+    label: 'Offre spéciale',
+    display: { showInTable: true, widget: 'tag' }
+  }).optional(),
 });
 
 export type Menu = z.infer<typeof MenuSchema>;

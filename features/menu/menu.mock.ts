@@ -12,9 +12,8 @@ export const mockMenus: Menu[] = [
     image: '/images/pizza-margherita.jpg',
     allergens: 'Gluten, Lactose',
     preparationTime: 15,
-    createdAt: '2025-07-01T10:00:00Z',
-    updatedAt: '2025-07-07T08:30:00Z',
-    cookingMethod: 'Four'
+    cookingMethod: 'Four',
+    specialOffer: true
   },
   {
     id: '2',
@@ -26,9 +25,8 @@ export const mockMenus: Menu[] = [
     image: '/images/salade-cesar.jpg',
     allergens: 'Gluten, Lactose, Œufs',
     preparationTime: 8,
-    createdAt: '2025-07-02T14:15:00Z',
-    updatedAt: '2025-07-06T16:45:00Z',
-    cookingMethod: 'Vapeur'
+    cookingMethod: 'Vapeur',
+    specialOffer: false
   },
   {
     id: '3',
@@ -40,9 +38,8 @@ export const mockMenus: Menu[] = [
     image: '/images/tiramisu.jpg',
     allergens: 'Lactose, Œufs, Gluten',
     preparationTime: 5,
-    createdAt: '2025-07-03T09:20:00Z',
-    updatedAt: '2025-07-07T12:10:00Z',
-    cookingMethod: 'Four'
+    cookingMethod: 'Four',
+    specialOffer: true
   },
   {
     id: '4',
@@ -54,9 +51,8 @@ export const mockMenus: Menu[] = [
     image: '/images/coca-cola.jpg',
     allergens: '',
     preparationTime: 1,
-    createdAt: '2025-07-04T11:00:00Z',
-    updatedAt: '2025-07-04T11:00:00Z',
-    cookingMethod: 'Vapeur'
+    cookingMethod: 'Vapeur',
+    specialOffer: false
   },
 ];
 
