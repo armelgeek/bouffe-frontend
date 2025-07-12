@@ -66,7 +66,7 @@ export default function ReservationPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-white to-primary/10 py-12 flex items-center justify-center">
+    <main className="min-h-screen bg-gradient-to-br from-white to-primary/10 flex items-center justify-center">
       <Card className="max-w-lg w-full p-8 mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-primary text-center">Réserver une table</h1>
         {success ? (

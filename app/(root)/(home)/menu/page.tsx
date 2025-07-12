@@ -1,17 +1,17 @@
 "use client";
 
 import { useMenu } from '@/features/menu/hooks/use-menu';
+import { useCartStore } from '@/features/shop/cart.store';
 import { Button } from '@/shared/components/atoms/ui/button';
 import { Card } from '@/shared/components/atoms/ui/card';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const CATEGORIES = ['Entrée', 'Plat principal', 'Dessert', 'Boisson'];
 
 export default function MenuPage() {
   const { data: menu } = useMenu();
-  const router = useRouter();
   const [category, setCategory] = useState<string | null>(null);
+  const { addToCart } = useCartStore();
 
   const plats = menu?.data || [];
   const filtered = category ? plats.filter((p) => p.category === category) : plats;
@@ -45,11 +45,9 @@ export default function MenuPage() {
             <Card
               key={item.id}
               className="flex flex-col items-center p-6 cursor-pointer hover:shadow-lg transition"
-              onClick={() => router.push(`/menu/${item.id}`)}
               tabIndex={0}
               role="button"
               aria-label={`Voir le détail du plat ${item.name}`}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') router.push(`/menu/${item.id}`); }}
             >
               {item.image && <img src={item.image} alt={item.name} className="w-28 h-28 object-cover rounded-full mb-3" />}
               <div className="font-semibold text-xl mb-1 text-primary underline underline-offset-2">{item.name}</div>
@@ -57,6 +55,14 @@ export default function MenuPage() {
               <div className="font-bold text-primary text-lg mb-2">{item.price} €</div>
               <div className="text-xs text-gray-400 mb-1">{item.category}</div>
               {item.allergens && <div className="text-xs text-red-400">Allergènes : {item.allergens}</div>}
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => addToCart(item)}
+                className="mt-3"
+              >
+                Ajouter au panier
+              </Button>
             </Card>
           ))}
         </div>

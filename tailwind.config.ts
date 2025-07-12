@@ -92,6 +92,10 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        green: {
+          DEFAULT: '#198754',
+          foreground: '#ffffff',
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',

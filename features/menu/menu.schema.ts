@@ -11,7 +11,7 @@ export const MenuSchema = z.object({
     label: 'Description',
     placeholder: 'Description du plat...'
   }),
-  price: createField.number(0, {
+  price: createField.number({
     label: 'Prix',
     display: { prefix: '€ ' }
   }),
@@ -31,9 +31,9 @@ export const MenuSchema = z.object({
     placeholder: 'Ex: Gluten, Lactose, Œufs',
     display: { showInTable: false }
   }).optional(),
-  preparationTime: createField.number(1, {
+  preparationTime: createField.number({
     label: 'Temps de préparation (min)',
-    display: { suffix: ' min' }
+    display: { suffix: ' min' },
   }),
   cookingMethod: createField.select(['Friture', 'Gril', 'Four', 'Vapeur'], {
     label: 'Méthode de cuisson'

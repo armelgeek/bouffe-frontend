@@ -18,7 +18,7 @@
     --card-foreground: 20 51% 3%;
     --border: 20 15% 94%;
     --input: 20 15% 94%;
-    --primary: 0 100% 40%; /* #CC0000 */
+    --primary: 146 64% 47%; /* #198754 */
     --primary-foreground: 0 0% 100%; /* white */
     --secondary: 0 0% 100%; /* #FFFFFF */
     --secondary-foreground: 0 0% 0%; /* black */
@@ -145,7 +145,7 @@ body, html {
   
   .service-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px -5px rgba(204, 0, 0, 0.2);
+    box-shadow: 0 10px 25px -5px rgba(25, 135, 84, 0.2); /* Vert */
   }
   
   .destination-card {
@@ -158,17 +158,17 @@ body, html {
   }
   
   .nav-link.active {
-    color: #CC0000;
-    border-bottom: 2px solid #CC0000;
+    color: #198754; /* Vert */
+    border-bottom: 2px solid #198754; /* Vert */
   }
   
   .nav-link:hover {
-    color: #CC0000;
+    color: #198754; /* Vert */
   }
   
   /* Button styles from transport design */
   .btn-primary {
-    background-color: #CC0000;
+    background-color: #198754; /* Vert */
     color: white;
     border-radius: 9999px;
     transition: all 0.3s ease;
@@ -176,13 +176,13 @@ body, html {
   }
   
   .btn-primary:hover {
-    background-color: #990000;
+    background-color: #146c43; /* Vert plus foncé */
     transform: scale(1.05);
   }
   
   .btn-outline {
-    border: 2px solid #CC0000;
-    color: #CC0000;
+    border: 2px solid #198754; /* Vert */
+    color: #198754; /* Vert */
     background: transparent;
     border-radius: 9999px;
     transition: all 0.3s ease;
@@ -190,7 +190,7 @@ body, html {
   }
   
   .btn-outline:hover {
-    background-color: #CC0000;
+    background-color: #198754; /* Vert */
     color: white;
     transform: scale(1.05);
   }

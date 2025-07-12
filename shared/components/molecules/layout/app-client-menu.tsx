@@ -8,12 +8,16 @@ import Link from "next/link";
 import { useActivePath } from "./use-active-path";
 import { authClient } from "@/shared/lib/config/auth-client";
 import { CLIENT_MENU_ITEMS } from "@/shared/lib/constants/app.constant";
+import { useCartStore } from "@/features/shop/cart.store";
+import { ShoppingBag } from "lucide-react";
 
 const AppClientMenu = () => {
   const { isLoading } = useAuth();
   const { data } = authClient.useSession();
   const session = data?.session;
   const pathname = useActivePath();
+
+  const cartItemCount = useCartStore((state) => state.items.reduce((total, item) => total + item.quantity, 0));
 
   const ctaButton = () => {
     if (isLoading) {
@@ -51,6 +55,18 @@ const AppClientMenu = () => {
           {item.title}
         </NavLink>
       ))}
+      <NavLink
+        href="/shop/cart"
+       className="font-semibold flex flex-row gap-2 items-center py-2 transition-colors duration-150 hover:text-primary"
+      >
+        <ShoppingBag className="w-6 h-6" />
+        Panier
+        {cartItemCount > 0 && (
+          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {cartItemCount}
+          </span>
+        )}
+      </NavLink>
     </Navigation>
   );
 };
