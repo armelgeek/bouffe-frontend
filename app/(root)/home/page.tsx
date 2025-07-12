@@ -6,11 +6,13 @@ import { Button } from '@/shared/components/atoms/ui/button';
 import { Card } from '@/shared/components/atoms/ui/card';
 import { Badge } from '@/shared/components/atoms/ui/badge';
 import { useRouter } from 'next/navigation';
+import { useCartStore } from '@/features/shop/cart.store';
 
 export default function HomePage() {
   const { data: menu } = useMenu();
   const { data: settings } = useSettings();
   const router = useRouter();
+  const addToCart = useCartStore((state) => state.addToCart);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-primary/10">
@@ -48,6 +50,18 @@ export default function HomePage() {
               </div>
               <div className="text-gray-500 text-sm mb-2">{item.description}</div>
               <div className="font-bold text-primary">{item.price} €</div>
+              <Button
+                size="sm"
+                variant="primary"
+                className="mt-2"
+                onClick={e => {
+                  e.stopPropagation();
+                  addToCart(item);
+                }}
+                aria-label={`Ajouter ${item.name} au panier`}
+              >
+                Ajouter au panier
+              </Button>
             </Card>
           ))}
         </div>
