@@ -4,6 +4,7 @@ import { useMenu } from '@/features/menu/hooks/use-menu';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { Button } from '@/shared/components/atoms/ui/button';
 import { Card } from '@/shared/components/atoms/ui/card';
+import { Badge } from '@/shared/components/atoms/ui/badge';
 import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
@@ -37,7 +38,14 @@ export default function HomePage() {
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') router.push(`/menu/${item.id}`); }}
             >
               {item.image && <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-full mb-2" />}
-              <div className="font-semibold text-lg mb-1 text-primary underline underline-offset-2">{item.name}</div>
+              <div className="font-semibold text-lg mb-1 text-primary underline underline-offset-2 flex items-center gap-2">
+                {item.name}
+                {item.specialOffer && (
+                  <span className="ml-1">
+                    <Badge variant="accent">Offre spéciale</Badge>
+                  </span>
+                )}
+              </div>
               <div className="text-gray-500 text-sm mb-2">{item.description}</div>
               <div className="font-bold text-primary">{item.price} €</div>
             </Card>
